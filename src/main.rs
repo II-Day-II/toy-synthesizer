@@ -52,7 +52,7 @@ impl Widget for Controller {
         state.focused = entity;
         entity
     }
-    fn on_event(&mut self, state: &mut State, entity: Entity, event: &mut Event) {
+    fn on_event(&mut self, _state: &mut State, _entity: Entity, event: &mut Event) {
         if let Some(window_event) = event.message.downcast::<WindowEvent>() {
             match window_event {
                 WindowEvent::KeyDown(Code::KeyZ, _) => {
@@ -135,7 +135,6 @@ fn run<T>(device: &cpal::Device, cfg: &cpal::StreamConfig, rx: crossbeam_channel
                         Message::Note(v) => note = v,
                         Message::Amp(v) => amp = v,
                         Message::Freq(v) => freq = v * (2000.0 - 440.0) + 440.0,
-                        _ => {}
                     }
                 }
 
