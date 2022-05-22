@@ -9,7 +9,7 @@ static THEME: &'static str = include_str!("theme.css");
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Message {
-    Note(f32),
+    Note(bool),
     Freq(f32),
     Amp(f32),
 }
@@ -56,10 +56,10 @@ impl Widget for Controller {
         if let Some(window_event) = event.message.downcast::<WindowEvent>() {
             match window_event {
                 WindowEvent::KeyDown(Code::KeyZ, _) => {
-                    self.command_sender.send(Message::Note(1.0)).expect("Failed to send Note on message!")
+                    self.command_sender.send(Message::Note(true)).expect("Failed to send Note on message!")
                 }
                 WindowEvent::KeyUp(Code::KeyZ, _) => {
-                    self.command_sender.send(Message::Note(0.0)).expect("Failed to send Note off message!")
+                    self.command_sender.send(Message::Note(false)).expect("Failed to send Note off message!")
                 }
                 _ => {}
             }
@@ -123,7 +123,7 @@ fn run<T>(device: &cpal::Device, cfg: &cpal::StreamConfig, rx: crossbeam_channel
     let mut phi = 0.0;
     let mut freq = 440.0;
     let mut amp = 1.0 ;
-    let mut note = 0.0;
+    let mut note = false;
 
     // Build output stream
     let stream = device.build_output_stream(
@@ -140,7 +140,7 @@ fn run<T>(device: &cpal::Device, cfg: &cpal::StreamConfig, rx: crossbeam_channel
 
                 // 'phase clock' varying between 0.0 and 1.0 with rate of freq
                 phi = (phi + freq/sample_rate).fract();
-                let make_noise = |phi: f32| -> f32 {note * amp * 0.1 * (2.0 * 3.141592 * phi).sin()};
+                let make_noise = |phi: f32| -> f32 {note as i32 as f32 * amp * 0.1 * (2.0 * 3.141592 * phi).sin()};
                 // convert to Sample
                 let value: T = cpal::Sample::from(&make_noise(phi));
 
