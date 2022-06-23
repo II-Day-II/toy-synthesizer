@@ -102,6 +102,7 @@ fn main() {
     });
 
     // create GUI
+    // TODO: Replace with TUI
     let window_description = WindowDescription::new().with_title("Toy synthesizer").with_inner_size(200, 120);
     let app = Application::new(window_description, |state, window| {
         state.style.parse_theme(THEME);
