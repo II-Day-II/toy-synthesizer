@@ -1,7 +1,6 @@
 // David Kaméus
 // 22/05/2022
 
-mod linsearch;
 mod oscillator;
 mod consts;
 
@@ -10,7 +9,6 @@ use std::{thread::{self, JoinHandle}};
 use crossbeam_channel::{Receiver, Sender};
 use device_query::{DeviceState, keymap::Keycode, DeviceQuery,};
 
-use linsearch::Linsearch;
 use oscillator::*; 
 use consts::*;
 
@@ -85,7 +83,7 @@ fn event_loop(handle: &JoinHandle<()>, tx: Sender<Message>) -> anyhow::Result<()
                 tx.send(Message::Amp(false))?;
                 key_down = true;
             } 
-            else if let Some(k) = keys.search(&p) {
+            else if let Some(k) = keys.iter().position(|x| x == &p) {
                 if key_id != Some(k) {
                     let f = BASE_FREQ * TWELFTH_ROOT_OF_2.powf(k as f32);
                     tx.send(Message::Freq(f))?;
@@ -111,7 +109,7 @@ fn run<T: Sample>(device: &cpal::Device, cfg: &cpal::StreamConfig, rx: Receiver<
     // error callback for output stream
     let err_fn = |err| eprintln!("Error occured on stream: {}", err);
 
-    let mut osc = SinOscillator::new(sample_rate);
+    let mut osc = Oscillator::new(sample_rate);
 
     // Build output stream
     let stream = device.build_output_stream(
@@ -121,9 +119,10 @@ fn run<T: Sample>(device: &cpal::Device, cfg: &cpal::StreamConfig, rx: Receiver<
                 while let Ok(cmd) = rx.try_recv() {
                     osc.handle_message(cmd);
                 }
+                osc.tick(); // update phase clock (shouldn't this be based on a delta time?)
 
                 // convert to Sample
-                let value: T = cpal::Sample::from(&osc.make_noise());
+                let value: T = cpal::Sample::from(&osc.make_noise(OscType::Sqr));
 
                 for sample in frame.iter_mut() {
                     *sample = value;

@@ -10,4 +10,5 @@ cpal = "0.13.5"
 anyhow = "1.0.57"
 crossbeam-channel = "0.5.4"
 device_query = "1.1.1"
+badrand = {git = "https://github.com/II-Day-II/badrand"}
 # TODO: look at tui-rs = "0.18"
